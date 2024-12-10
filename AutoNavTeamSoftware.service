@@ -1,0 +1,20 @@
+#
+# QuadRover Autonomous Navigation Senior Capstone Project
+# - Fall 2024 - Spring 2025
+# - njp0008, 12/09/2024
+#
+# Service routine to run SF45 Lightware LiDAR Sensor at bootup
+#   of the rover, and subsequently the Raspberry Pi 4b and LiDAR
+#
+
+  
+[Unit]
+Description=Runs LiDAR to detect obstacles and send data to MEGA
+After=multi-user.target
+
+[Service]
+ExecStart=/home/jpicciri/Documents/AutoNavTeamSoftware/AutoNavTeamSoftware_RebootScript.sh
+User=jpicciri
+
+[Install]
+WantedBy=multi-user.target
