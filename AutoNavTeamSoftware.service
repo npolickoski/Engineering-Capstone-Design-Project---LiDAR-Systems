@@ -1,20 +1,29 @@
 #
 # QuadRover Autonomous Navigation Senior Capstone Project
 # - Fall 2024 - Spring 2025
-# - njp0008, 12/09/2024
+# - njp0008
 #
 # Service routine to run SF45 Lightware LiDAR Sensor at bootup
 #   of the rover, and subsequently the Raspberry Pi 4b and LiDAR
 #
-
+# Edit Log
+# - 12/09/2024: Created file; originally added delay, directory change, and python
+#                 script running but wasn't able to run it all from this file, so
+#                 a bash script was created: "AutoNavTeamSoftware_RebootScript.sh" 
+# - 12/10/2024: Added error log to debug why program isn't writing data to file
+# - 12/11/2024: Service routine runs bash script correctly
+#
   
 [Unit]
 Description=Runs LiDAR to detect obstacles and send data to MEGA
 After=multi-user.target
 
+
 [Service]
-ExecStart=/home/jpicciri/Documents/AutoNavTeamSoftware/AutoNavTeamSoftware_RebootScript.sh
 User=jpicciri
+Group=jpicciri
+ExecStart=/bin/bash /home/jpicciri/Documents/AutoNavTeamSoftware/AutoNavTeamSoftware_RebootScript.sh
+
 
 [Install]
 WantedBy=multi-user.target
