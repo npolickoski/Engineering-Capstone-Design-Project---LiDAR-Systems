@@ -18,6 +18,7 @@
 #     Crontab Protocol: @reboot python3 /home/jpicciri/Documents/AutoNavTeamSoftware/SF45pythonV9.py &
 #--------------------------------------------------------------------------------------------------------------
 
+import os
 import time
 import serial
 import numpy as np
@@ -261,11 +262,13 @@ def skip(scanAngle,temp):
 # Main application.
 #--------------------------------------------------------------------------------------------------------------
 print('Running LWNX sample.')
+os.chdir("/home/jpicciri/Documents/AutoNavTeamSoftware/")	# explicitly change working directory in the program
 
 # NOTE: Using the SF45/B commands as detailed here: http://support.lightware.co.za/sf45b/#/introduction
 
-# Make a connection to the com port.
-serialPortName = '/dev/ttyACM0'
+# Make a connection to the com port.	
+#serialPortName  = '/dev/serial/by-path/platform-fd500000.pcie-pci-0000:01:00.0-usb-0:1.1:1.0' # exact path of lidar when plugged in
+serialPortName = '/dev/ttyACM0' 
 #serialPortName = 'COM46'
 
 serialPortBaudRate = 921600
@@ -315,7 +318,7 @@ if Enable == 1:
 	executeCommand(port, 85, 1, [lsbs, msbs])
 
 	#Change high scan angle
-	High1 = 150
+	High1 = 90
 	#High1 = input('Input a high scan angle (10...160) : ')
 	High0 = int(High1)
 	High = float_to_bin(High0)
@@ -323,7 +326,7 @@ if Enable == 1:
 	executeCommand(port, 99, 1, [dk1,dk2,lsbh,msbh])
 
 	#Change low scan angle
-	Low1 = 150
+	Low1 = 90
 	#Low1 = input('Input a low scan angle (10...160) : ')
 	Low0 = int(Low1)
 	Low = float_to_bin(-Low0)
@@ -332,8 +335,8 @@ if Enable == 1:
 	response = executeCommand(port, 44,0)
 
 	#Open file for writing
-	fName = "test7_startUp.txt"
-	#fName = input("Enter SF45 file name:  ")z
+	fName = "test2_reboot.txt"
+	#fName = input("Enter SF45 file name:  ")
 	fHandle = open(fName, 'w')
 
 	# Read distance data
@@ -382,8 +385,6 @@ if Enable == 1:
 					fHandle.write(str(scanDist[index]))
 					fHandle.write('\n')
 
-				fHandle.close()
-
 				# Process scan to detect objects                    
 				print("", 'numPts = ', numPts)
 
@@ -391,10 +392,13 @@ if Enable == 1:
 				objDetect.ObjectDetect(fHandle, numPts, minRange, maxRange, scanDist, scanAngle)
 				# objDetect.ObjectDetect(numPts, minRange, maxRange, gapSize, scanDist, scanAngle)
 
-				# clear lists    
+				# Clear Lists + Close File 
+				fHandle.close()  
 				scanDist = []
 				scanAngle = []
 
 				# break from while true loop
 				break
+				
+
 
