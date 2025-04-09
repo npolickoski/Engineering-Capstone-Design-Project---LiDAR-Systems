@@ -20,7 +20,7 @@
 						# use when debugging
 
 echo "Starting AutoNav Reboot Bash Script" || exit 1
-sleep 10 || exit 1
+# sleep 5 || exit 1
 cd /home/jpicciri/Documents/AutoNavTeamSoftware/ || exit 1
 /usr/bin/python3 /home/jpicciri/Documents/AutoNavTeamSoftware/SF45pythonV9.py || exit 1
 echo "AutoNavTeamSoftware_RebootScript Completed " || exit 1

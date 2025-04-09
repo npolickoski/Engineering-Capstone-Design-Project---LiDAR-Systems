@@ -23,11 +23,11 @@ import time
 import serial
 import numpy as np
 import struct
-#import LidarObjectDetectionV5 as objDetect
+import LidarObjectDetectionV5 as objDetect
 
 numPts = 0           #  number of points in a complete scan 
 temp = 0             # temporary scan angle
-maxRange   = 3100     # max object detection distance (cm)
+maxRange   = 3100     # max object detection distance (cm) (1 meter)
 minRange   = 10
 # gapSize    = 10      # min angular separation of objects
 
@@ -61,7 +61,6 @@ def createCrc(data):
 
 	return crc
 
-
 # Create raw bytes for a packet.
 def buildPacket(command, write, data=[]):
 	payloadLength = 1 + len(data)
@@ -73,7 +72,6 @@ def buildPacket(command, write, data=[]):
 	packetBytes.append((crc >> 8) & 0xFF)
 
 	return bytearray(packetBytes)
-
 
 # Check for packet in byte stream.
 def parsePacket(byte):
@@ -114,7 +112,6 @@ def parsePacket(byte):
 			if crc == verifyCrc:
 				return True
 
-
 # Wait (up to timeout) for a packet to be received of the specified command.
 def waitForPacket(port, command, timeout=1):
 	global packetParseState
@@ -140,7 +137,6 @@ def waitForPacket(port, command, timeout=1):
 			if parsePacket(b) == True:
 				if packetData[3] == command:
 					return packetData
-
 
 # Extract a 16 byte string from a string packet.
 def readStr16(packetData):
@@ -198,7 +194,7 @@ def readSignalData(packetData):
 # 	return firstRaw, firstFiltered, firstStrength, lastRaw, lastFiltered, lastStrength, noise, temperature , yawAngle 
 
 	return lastRaw, yawAngle 
-
+# -------------------------------------------------------------
 
 # Send a request packet and wait for response.
 def executeCommand(port, command, write, data=[], timeout=1):
@@ -216,10 +212,8 @@ def executeCommand(port, command, write, data=[], timeout=1):
 
 	raise Exception('LWNX command failed to receive a response.')
 
-
 def float_to_bin(num):
     return format(struct.unpack('!I', struct.pack('!f', num))[0], '032b')
-
 
 def High_bin_to_Dec(num1):
         a4 = num1[0:8]
@@ -232,7 +226,6 @@ def High_bin_to_Dec(num1):
         dk2  = int(a1, 2)
         return msbh, lsbh, dk1, dk2
 
-
 def Low_bin_to_Dec(num2):
         a4 = num2[0:8]
         a3 = num2[8:16]
@@ -244,11 +237,9 @@ def Low_bin_to_Dec(num2):
         dk4  = int(a1, 2)
         return msbl, lsbl, dk3, dk4
 
-
 def method_a(sample_string):
     c =' '.join(format(ord(x), 'b032') for x in sample_string)
     return c
-
 
 def Convert_speed(num3):
         Speed1 = "{0:016b}".format(num3)
@@ -267,60 +258,148 @@ def skip(scanAngle,temp):
         skipFlag = True
     return skipFlag
 
+#--------------------------------------------------------------------------------------------------------------
+# Main application.
+#--------------------------------------------------------------------------------------------------------------
+print('Running LWNX sample.')
+os.chdir("/home/jpicciri/Documents/AutoNavTeamSoftware/")	# explicitly change working directory in the program
 
-def initLiDARSystem(commsLiDAR):
-    """
-        Initializes LiDAR system specifications before scanning
-		- SF45/B Commands: http://support.lightware.co.za/sf45b/#/introduction
-		- Configure Update Rate: https://support.lightware.co.za/sf45b/#/command_detail/command%20descriptions/66.%20update%20rate
-            Value can be one of:
-            1 = 50 Hz
-            2 = 100 Hz
-            3 = 200 Hz
-            4 = 400 Hz
-            5 = 500 Hz
-            6 = 625 Hz
-            7 = 1000 Hz
-            8 = 1250 Hz
-            9 = 1538 Hz
-            10 = 2000 Hz
-            11 = 2500 Hz
-            12 = 5000 Hz
-    """
-    # Get Product Info
-    response = executeCommand(commsLiDAR, 0, 0, timeout = 0.1)
-    print('Product: ' + readStr16(response))
+# NOTE: Using the SF45/B commands as detailed here: http://support.lightware.co.za/sf45b/#/introduction
 
-    # Enable/Disable Scan
-    Enable1 = 1
-    Enable = int(Enable1)
-    executeCommand(commsLiDAR, 96, 1, [Enable])
+# Make a connection to the com port.	
+#serialPortName  = '/dev/serial/by-path/platform-fd500000.pcie-pci-0000:01:00.0-usb-0:1.1:1.0' # exact path of lidar when plugged in
+serialPortName = '/dev/ttyACM0' 
+#serialPortName = 'COM46'
 
-    # Update Rate
-    Update1 = 12                                            # update rate between 1-12
-    Update = int(Update1)
-    executeCommand(commsLiDAR, 66, 1, [Update])
-    executeCommand(commsLiDAR, 27, 1, [8, 1, 0, 0])
+serialPortBaudRate = 921600
+port = serial.Serial(serialPortName, serialPortBaudRate, timeout = 0.1)
 
-    # Enabling Scanning
-    if Enable == 1:
-        # Scan Speed
-        Speed1 = 30                                          # speed between 5-2000
-        Speed = int(Speed1)
-        msbs,lsbs = Convert_speed(Speed)
-        executeCommand(commsLiDAR, 85, 1, [lsbs, msbs])
+# Get product information.
+response = executeCommand(port, 0, 0, timeout = 0.1)
+print('Product: ' + readStr16(response))
 
-        # High Angle
-        High1 = 50                                         # high angle from 10-160
-        High0 = int(High1)
-        High = float_to_bin(High0)
-        msbh,lsbh,dk1,dk2 = High_bin_to_Dec(High)
-        executeCommand(commsLiDAR, 99, 1, [dk1,dk2,lsbh,msbh])
+#Enable/Disable scan
+Enable1 = 1
+#Enable1 = input('Enable (1)/Disable(0) scan : ')
+Enable = int(Enable1)
+executeCommand(port, 96, 1, [Enable])
 
-        # Low Angle
-        Low1 = 50                                           # low angle from 10-160
-        Low0 = int(Low1)
-        Low = float_to_bin(-Low0)
-        msbl,lsbl,dk3,dk4 = Low_bin_to_Dec(Low)
-        executeCommand(commsLiDAR, 98, 1,[dk3,dk4,lsbl,msbl])
+# Configure Update Rate
+        # https://support.lightware.co.za/sf45b/#/command_detail/command%20descriptions/66.%20update%20rate
+        # Value can be one of:
+        # 1	= 50 Hz
+        # 2	= 100 Hz
+        # 3	= 200 Hz
+        # 4	= 400 Hz
+        # 5	= 500 Hz
+        # 6	= 625 Hz
+        # 7	= 1000 Hz
+        # 8	= 1250 Hz
+        # 9	= 1538 Hz
+        # 10 = 2000 Hz
+        # 11 = 2500 Hz
+        # 12 = 5000 Hz
+Update1 = 12
+#Update1 = input('Input a update rate (1...12) : ')
+Update = int(Update1)
+#print(Update)
+#msbs,lsbs = Convert_speed(Update)
+executeCommand(port, 66, 1, [Update])
+
+# Set output to all information.
+executeCommand(port, 27, 1, [8, 1, 0, 0])
+
+if Enable == 1:
+	# Set scan speed
+	Speed1 = 5
+	#Speed1 = input('Input a scan rate (5...2000) : ')
+	Speed = int(Speed1)
+	msbs,lsbs = Convert_speed(Speed)
+	executeCommand(port, 85, 1, [lsbs, msbs])
+
+	#Change high scan angle
+	High1 = 160
+	#High1 = input('Input a high scan angle (10...160) : ')
+	High0 = int(High1)
+	High = float_to_bin(High0)
+	msbh,lsbh,dk1,dk2 = High_bin_to_Dec(High)
+	executeCommand(port, 99, 1, [dk1,dk2,lsbh,msbh])
+
+	#Change low scan angle
+	Low1 = 160
+	#Low1 = input('Input a low scan angle (10...160) : ')
+	Low0 = int(Low1)
+	Low = float_to_bin(-Low0)
+	msbl,lsbl,dk3,dk4 = Low_bin_to_Dec(Low)
+	executeCommand(port, 98, 1,[dk3,dk4,lsbl,msbl])
+	response = executeCommand(port, 44,0)
+
+	#Open file for writing
+	filePath = "/home/jpicciri/Documents/AutoNavTeamSoftware/"
+	fName = filePath + "deleteLaterTest.txt"
+	#fName = input("Enter SF45 file name:  ")
+	fHandle = open(fName, 'w')
+
+	# Read distance data
+	while True:
+		if response != None:
+			response = executeCommand(port, 44, 0)
+			# variables must be consistent with command 27 parameters
+			lastRaw, yawAngle = readSignalData(response)
+			# process scan from high to low angle limits  
+			if int(yawAngle) >= High0 - 1:
+				print("")
+				print("")
+				temp = yawAngle
+				while int(yawAngle) > -Low0 + 1:
+					response = executeCommand(port, 44, 0)
+					lastRaw, yawAngle = readSignalData(response)
+
+					# skip over multiple angle values                        
+					skipFlag = skip(yawAngle, temp)
+					if skipFlag == True:
+						scanDist.append(lastRaw)
+						scanAngle.append(yawAngle)
+						temp = yawAngle
+						numPts += 1
+		
+				print("")
+				print("")
+
+				# print lists to shell after a scan
+				for index in range(numPts):
+					print(scanAngle[index], "  ", scanDist[index])
+
+				# Create file of (scanAngle[], scanDist[])
+				fHandle.write('File Name: ' + fName + ', ')
+				fHandle.write('Update Rate: ' + str(Update1) + ', ')
+				fHandle.write('Scan Rate: ' + str(Speed1) + ', ')
+				fHandle.write('High Angle: ' + str(High1) + ', ')
+				fHandle.write('Low Angle: ' + str(Low1) + ', ')
+				fHandle.write('\n\n')
+
+				fHandle.write('Angle | Distance\n')
+				fHandle.write('================\n')
+				for index in range(numPts):
+					fHandle.write(str(scanAngle[index]))
+					fHandle.write(', ')
+					fHandle.write(str(scanDist[index]))
+					fHandle.write('\n')
+
+				# Process scan to detect objects                    
+				print("", 'numPts = ', numPts)
+
+				# filter scan for objects in detection range, separate, and characterize  
+				objDetect.ObjectDetect(fHandle, numPts, minRange, maxRange, scanDist, scanAngle)
+				# objDetect.ObjectDetect(numPts, minRange, maxRange, gapSize, scanDist, scanAngle)
+
+				# Clear Lists + Close File 
+				fHandle.close()  
+				scanDist = []
+				scanAngle = []
+
+				# break from while true loop
+				break
 				
+
+
