@@ -12,10 +12,13 @@
 
   
 **Hardware:**
-- 
+- SF45 Lightware LiDAR Sensor
+- Raspberry Pi 4B
+- LoRa Pi Hat Radio Module
 
 
 
 
 ## Hardare Setup
-![top](./utils/images/side.jpg)
+![rasPi](./utils/images/rasPi.jpg)
+![lidar](./utils/images/lidar.jpg)
