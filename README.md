@@ -8,6 +8,8 @@ Computer Vision control for the UAH's legacy QuadRover project in the following 
     3) Output data to mission report file via radio module
   
 **Concepts Used:** 
+- UART Serial Communication
+- Threading
 - 
 
   
