@@ -10,7 +10,9 @@ Computer Vision control for the UAH's legacy QuadRover project in the following 
 **Concepts Used:** 
 - UART Serial Communication
 - Threading
-- 
+- End-Tag Data Transmission
+- Systen Boot-Up Service Routines
+- Power Management Circuit
 
 
 **Resources:** 
