@@ -12,6 +12,10 @@ Computer Vision control for the UAH's legacy QuadRover project in the following 
 - Threading
 - 
 
+
+**Resources:** 
+- LiDAR Scanning Range Simulation: https://www.desmos.com/calculator/9l4twiwq04
+
   
 **Hardware:**
 - SF45 Lightware LiDAR Sensor
