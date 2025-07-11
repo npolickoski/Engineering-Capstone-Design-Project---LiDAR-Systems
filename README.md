@@ -2,6 +2,7 @@
 
 **Goal:** 
 Computer Vision control for main rover systems in the following ways:
+
     1) Process LiDAR distance and angle data at present and past saved instances
     2) Control rover position in either "Obstacle Avoidance" or "Landmark Honing" modes
     3) Output data to mission report file via radio module
