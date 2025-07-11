@@ -30,3 +30,4 @@ Computer Vision control for the UAH's legacy QuadRover project in the following 
 ## Hardare Setup
 ![rasPi](./utils/images/rasPi.jpg)
 ![lidar](./utils/images/lidar.jpg)
+![rover](./utils/images/rover.jpg)
