@@ -1,13 +1,12 @@
 ## Engineering Capstone Design Project - LiDAR Systems Code
-- Developed control algorithms for Obstacle Avoidance and Waypoint Navigation integrating Lightware SF45 LiDAR Sensor data at 921.6 Kbps from Raspberry Pi 4B to Arduino Mega using Python
 
 **Goal:** 
-- d
+- Computer Vision control for main rover systems in the following ways:
+    1) Process LiDAR distance and angle data at present and past saved instances
+    2) Control rover position in either "Obstacle Avoidance" or "Landmark Honing" modes
+    3) Output data to mission report file via radio module
   
 **Concepts Used:** 
-- 
-  
-**Functionality:**
 - 
 
   
